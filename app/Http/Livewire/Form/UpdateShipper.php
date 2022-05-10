@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Http\Livewire\Form;
+
+use App\Models\Shipper;
+use Livewire\Component;
+
+class UpdateShipper extends Component
+{
+    public $shipper;
+
+    public $user_id;
+    public $shipper_name;
+    public $country;
+    public $city;
+    public $address;
+    public $pic_name;
+    public $pic_phone;
+    public $remark;
+    public $email;
+
+    protected $rules = [
+        'shipper_name' => 'required|min:4',
+        'country'      => 'required',
+        'city'         => 'required',
+        'address'      => 'required',
+        'pic_name'     => 'required',
+        'pic_phone'    => 'required',
+        'remark'       => 'required',
+        'email'        => 'required',
+    ];
+
+    public function mount()
+    {
+        $this->shipper_name = $this->shipper->shipper_name;
+        $this->country      = $this->shipper->country;
+        $this->city         = $this->shipper->city;
+        $this->address      = $this->shipper->address;
+        $this->pic_name     = $this->shipper->pic_name;
+        $this->pic_phone    = $this->shipper->pic_phone;
+        $this->remark       = $this->shipper->remark;
+        $this->email        = $this->shipper->email;
+    }
+
+    public function submit()
+    {
+        $this->validate();
+        if (Shipper::where("shipper_name", $this->shipper_name)->where("id", "!=", $this->shipper->id)->count() > 0) {
+            session()->flash("fms_error", "Shipper with name : {$this->shipper_name} is already exist");
+            return;
+        }
+
+        $model               = $this->shipper;
+        $model->shipper_name = $this->shipper_name;
+        $model->country      = $this->country;
+        $model->city         = $this->city;
+        $model->address      = $this->address;
+        $model->pic_name     = $this->pic_name;
+        $model->pic_phone    = $this->pic_phone;
+        $model->remark       = $this->remark;
+        $model->email        = $this->email;
+        $model->user_id      = request()->user()->id;
+
+        try {
+            $model->save();
+        } catch (\Throwable $th) {
+            session()->flash("fms_error", $th->getMessage());
+            return;
+        }
+
+        session()->flash("fms_info", "Data Saved Successful");
+    }
+
+    public function render()
+    {
+        return view('livewire.form.update-shipper');
+    }
+}
